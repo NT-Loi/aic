@@ -26,7 +26,7 @@ class HybridVideoRetrievalSystem:
         self._setup_es_index()
 
     def _load_clip_model(self):
-        self.model, _ = clip.load("ViT-B/32", device=self.device)
+        self.model, _ = clip.load(config.CLIP_MODEL, device=self.device)
 
     def _connect_to_milvus(self):
         connections.connect("default", host=config.MILVUS_HOST, port=config.MILVUS_PORT)
