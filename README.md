@@ -25,15 +25,11 @@ Create a `config.py` file and populate it with the necessary paths and settings.
 
 ### 3. Start Services
 
-Use the provided `docker-compose.yml` to start Milvus and Elasticsearch.
-
 ```bash
 docker compose up -d
 ```
 
 ### 4. Install Python Dependencies
-
-Install the dependencies:
 
 ```bash
 pip install -r requirements.txt
