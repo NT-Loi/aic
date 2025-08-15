@@ -1,6 +1,8 @@
 # Necessary directories
 DATA_ROOT_DIR = "data"
 CLIP_FEATURES_DIR = "data/clip-features-32"
+VIDEOS_DIR = "data/videos"
+KEYFRAMES_DIR = "data/key_frames"
 METADATA_DIR = "data/media-info"
 
 # Models

@@ -3,6 +3,7 @@ import clip
 import numpy as np
 from pathlib import Path
 import json
+import logging
 from pymilvus import (
     connections,
     utility,
@@ -14,29 +15,47 @@ from pymilvus import (
 from elasticsearch import Elasticsearch
 import config 
 
+# --- Setup Logging ---
+log_file = "retrieval.log"
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] - %(message)s",
+    handlers=[
+        logging.FileHandler(log_file),
+    ]
+)
+logger = logging.getLogger(__name__)
+
 class HybridVideoRetrievalSystem:
-    def __init__(self):
+    def __init__(self, re_ingest=True):
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         
         self._load_clip_model()
         self._connect_to_milvus()
         self._connect_to_es()
         
-        self._setup_milvus_collection()
-        self._setup_es_index()
+        if re_ingest:
+            logger.info("--- STARTING DATA INGESTION PROCESS ---")
+            self._setup_milvus_collection()
+            self._setup_es_index()
+        else:
+            logger.info("--- SKIPPING DATA INGESTION, CONNECTING TO EXISTING DATA ---")
+            self.vector_keyframes = Collection(config.COLLECTION_NAME)
+            self.vector_keyframes.load()
+            logger.info("Collection loaded from Milvus.")
 
     def _load_clip_model(self):
         self.model, _ = clip.load(config.CLIP_MODEL, device=self.device)
 
     def _connect_to_milvus(self):
         connections.connect("default", host=config.MILVUS_HOST, port=config.MILVUS_PORT)
-        print("Kết nối Milvus thành công.")
+        logger.info("Successfully connected to Milvus.")
 
     def _connect_to_es(self):
         self.es = Elasticsearch(f"http://{config.ES_HOST}:{config.ES_PORT}")
         if not self.es.ping():
-            raise ConnectionError("Không thể kết nối tới Elasticsearch.")
-        print("Kết nối Elasticsearch thành công.")
+            raise ConnectionError("Could not connect to Elasticsearch.")
+        logger.info("Successfully connected to Elasticsearch.")
 
     def _setup_milvus_collection(self):
         """
@@ -48,7 +67,7 @@ class HybridVideoRetrievalSystem:
         """
         # Nếu collection đã tồn tại, xóa đi để làm lại từ đầu (tốt cho việc demo)
         if utility.has_collection(config.COLLECTION_NAME):
-            print(f"Collection '{config.COLLECTION_NAME}' đã tồn tại. Xóa đi để tạo mới...")
+            logger.warning(f"Collection '{config.COLLECTION_NAME}' already exists. Dropping to create a new one.")
             utility.drop_collection(config.COLLECTION_NAME)
 
         # 1. Định nghĩa Schema cho collection
@@ -62,14 +81,14 @@ class HybridVideoRetrievalSystem:
         schema = CollectionSchema(fields, "Collection chứa các vector đặc trưng của keyframe")
         
         # 2. Tạo Collection
-        print(f"Đang tạo collection '{config.COLLECTION_NAME}'...")
+        logger.info(f"Creating collection '{config.COLLECTION_NAME}'...")
         self.vector_keyframes = Collection(config.COLLECTION_NAME, schema)
         
         # 3. Nạp dữ liệu (Ingest Data)
         self._ingest_data()
         
         # 4. Tạo Index cho vector field để tăng tốc tìm kiếm
-        print("Đang tạo index cho collection...")
+        logger.info("Creating index for the collection...")
         index_params = {
             "metric_type": "L2",  # Khoảng cách Euclidean, phù hợp với vector chưa chuẩn hóa
             "index_type": "IVF_FLAT",
@@ -81,13 +100,13 @@ class HybridVideoRetrievalSystem:
         )
         
         # 5. Tải collection vào bộ nhớ để sẵn sàng tìm kiếm
-        print("Đang tải collection vào bộ nhớ...")
+        logger.info("Loading collection into memory...")
         self.vector_keyframes.load()
-        print("Hệ thống đã sẵn sàng!")
+        logger.info("Milvus setup complete and ready for search.")
         
     def _ingest_data(self):
         """Đọc dữ liệu từ các file .npy và chèn vào Milvus."""
-        print("Bắt đầu nạp dữ liệu vào Milvus...")        
+        logger.info("Starting data ingestion into Milvus...")      
         total_vectors_inserted = 0
         for npy_file in Path(config.CLIP_FEATURES_DIR).glob("*.npy"):
             video_id = npy_file.stem
@@ -102,15 +121,15 @@ class HybridVideoRetrievalSystem:
             total_vectors_inserted += len(vectors)
             
         self.vector_keyframes.flush() # Đẩy dữ liệu vào storage
-        print(f"Nạp dữ liệu hoàn tất. Đã chèn {total_vectors_inserted} vector.")
+        logger.info(f"Ingestion complete. Inserted {total_vectors_inserted} vectors.")
 
     def _setup_es_index(self):
         """Đọc file metadata và nạp vào Elasticsearch."""
         if self.es.indices.exists(index=config.ES_INDEX_NAME):
-            print(f"Index '{config.ES_INDEX_NAME}' đã tồn tại. Xóa đi để tạo mới...")
+            logger.warning(f"Index '{config.ES_INDEX_NAME}' already exists. Dropping to create a new one.")
             self.es.indices.delete(index=config.ES_INDEX_NAME)
             
-        print(f"Đang tạo và nạp dữ liệu cho index '{config.ES_INDEX_NAME}'...")
+        logger.info(f"Creating and ingesting data for index '{config.ES_INDEX_NAME}'...")
         for metadata_file in Path(config.METADATA_DIR).glob("*.json"):
             video_id = metadata_file.stem
             with open(metadata_file, 'r', encoding='utf-8') as f:
@@ -121,9 +140,9 @@ class HybridVideoRetrievalSystem:
                 id=video_id,
                 document=metadata
             )
-        print("Nạp dữ liệu vào Elasticsearch hoàn tất.")
+        logger.info("Data ingestion into Elasticsearch complete.")
 
-    def _search_milvus(self, query_vector, limit=20):
+    def _search_milvus(self, query_vector, limit=500):
         """Thực hiện tìm kiếm vector trên Milvus."""
         search_params = {"metric_type": "L2", "params": {"nprobe": 10}}
         results = self.vector_keyframes.search(
@@ -147,7 +166,7 @@ class HybridVideoRetrievalSystem:
             scores[vid][frame] = hit.distance
         return scores
 
-    def _search_es(self, text_query, limit=20):
+    def _search_es(self, text_query, limit=500):
         """Thực hiện tìm kiếm từ khóa trên Elasticsearch."""
         resp = self.es.search(
             index=config.ES_INDEX_NAME,
@@ -202,7 +221,7 @@ class HybridVideoRetrievalSystem:
         return text_features.float().cpu().numpy()
 
     def search(self, text_query: str, top_k: int = 5):
-        print(f"\n--- Bắt đầu Hybrid Search cho: '{text_query}' ---")
+        logger.info(f"--- Starting Hybrid Search for: '{text_query}' ---")
         
         # 1. Mã hóa truy vấn
         query_vector = self.encode_text(text_query)
@@ -215,7 +234,7 @@ class HybridVideoRetrievalSystem:
         fused_results = self._fuse_results(milvus_results, es_results)
         
         # 4. In kết quả
-        print("--- KẾT QUẢ TÌM KIẾM KẾT HỢP ---")
+        logger.info("--- HYBRID SEARCH RESULTS ---")
         final_results = []
         for video_id, rrf_score in fused_results[:top_k]:
             es_score = es_results.get(video_id)
@@ -238,25 +257,15 @@ class HybridVideoRetrievalSystem:
 
             final_results.append(result_details)
 
-            # In ra thông tin
-            print(f"\tVideo ID: {video_id}")
-            print(f"\tĐiểm kết hợp (RRF): {result_details['rrf_score']:.4f}")
-            
+            # Log result details
             es_info = f"ES score: {result_details['es_score']:.4f}" if result_details['es_score'] is not None else "ES score: N/A"
-            
             if result_details['milvus_best_distance'] is not None:
                 milvus_info = f"Milvus: frame {result_details['milvus_best_frame']} @ dist {result_details['milvus_best_distance']:.4f}"
             else:
                 milvus_info = "Milvus: N/A"
-                
-            print(f"\t({milvus_info} | {es_info})")
+            
+            logger.info(
+                f"Video ID: {video_id} | RRF Score: {result_details['rrf_score']:.4f} | Details: ({milvus_info} | {es_info})"
+            )
 
         return final_results
-
-if __name__ == "__main__":
-    try:
-        system = HybridVideoRetrievalSystem()
-        system.search("một phương tiện giao thông trên đường")
-    finally:
-        connections.disconnect("default")
-        print("\nĐã ngắt kết nối Milvus.")
