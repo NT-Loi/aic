@@ -81,8 +81,8 @@ try:
                                 f"{result['milvus_best_frame']:03d}.jpg"
                             )
                             if keyframe_path.exists():
-                                image = Image.open(keyframe_path)
-                                st.image(image, caption=f"Frame phù hợp nhất (index: {result['milvus_best_frame']:03d})")
+                                with Image.open(keyframe_path) as img:
+                                    st.image(img.copy(), caption=f"Frame phù hợp nhất: {result['milvus_best_frame']:03d}")
                             else:
                                 st.warning(f"Ảnh {keyframe_path.name} không tồn tại.")
                         else:
@@ -116,7 +116,10 @@ try:
                             # Giả định keyframe index tương ứng với số giây
                             best_frame = result.get('milvus_best_frame')
                             start_time = int(best_frame) if best_frame is not None else 0
-                            st.video(str(video_path), start_time=start_time)
+                            # st.video(str(video_path), start_time=start_time)
+                            with open(str(video_path), "rb") as f:
+                                video_bytes = f.read()
+                                st.video(video_bytes, start_time=start_time)
                         else:
                             st.warning(f"Không tìm thấy file video cho '{result['video_id']}'.")
 
@@ -139,8 +142,8 @@ try:
                                     with cols[j]:
                                         keyframe_path = Path(config.KEYFRAMES_DIR) / result["video_id"] / f"{frame_index:03d}.jpg"
                                         if keyframe_path.exists():
-                                            image = Image.open(keyframe_path)
-                                            st.image(image)
+                                            with Image.open(keyframe_path) as img:
+                                                st.image(img.copy())
                                             st.caption(f"Frame {frame_index} | Dist: {distance:.3f}")
                                         else:
                                             st.warning(f"Ảnh {frame_index:03d}.jpg không tồn tại.")
