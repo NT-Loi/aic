@@ -6,7 +6,8 @@ KEYFRAMES_DIR = "data/key_frames"
 METADATA_DIR = "data/media-info"
 
 # Models
-CLIP_MODEL = "ViT-B/32"
+# MODEL_NAME = "ViT-B/32"
+MODEL_NAME = "M-CLIP/XLM-Roberta-Large-Vit-B-32"
 
 # Milvus config
 MILVUS_HOST = "localhost"

@@ -1,6 +1,5 @@
 import streamlit as st
 from pathlib import Path
-from PIL import Image
 import json
 import config
 from hybrid_retrieval import HybridVideoRetrievalSystem
@@ -43,7 +42,7 @@ try:
 
     if query:
         with st.spinner("🧠 Đang phân tích và tìm kiếm..."):
-            results = system.search(query, top_k=100)
+            results = system.search(query, top_k=20)
 
         st.divider()
         st.subheader(f"Kết quả hàng đầu cho: '{query}'")

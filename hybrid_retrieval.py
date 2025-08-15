@@ -1,5 +1,7 @@
 import torch
-import clip
+# import clip
+from multilingual_clip import pt_multilingual_clip
+import transformers
 import numpy as np
 from pathlib import Path
 import json
@@ -45,7 +47,12 @@ class HybridVideoRetrievalSystem:
             logger.info("Collection loaded from Milvus.")
 
     def _load_clip_model(self):
-        self.model, _ = clip.load(config.CLIP_MODEL, device=self.device)
+        # self.model, _ = clip.load(config.MODEL_NAME, device=self.device)
+        logger.info(f"Loading multilingual model '{config.MODEL_NAME}' to device '{self.device}'...")
+        self.model = pt_multilingual_clip.MultilingualCLIP.from_pretrained(config.MODEL_NAME)
+        self.tokenizer = transformers.AutoTokenizer.from_pretrained(config.MODEL_NAME)
+        self.model.to(self.device)
+        logger.info("Model loaded successfully.")
 
     def _connect_to_milvus(self):
         connections.connect("default", host=config.MILVUS_HOST, port=config.MILVUS_PORT)
@@ -215,9 +222,11 @@ class HybridVideoRetrievalSystem:
         return reranked_results
     
     def encode_text(self, text_query: str):
+        # with torch.no_grad():
+        #     text_tokens = clip.tokenize([text_query]).to(self.device)
+        #     text_features = self.model.encode_text(text_tokens)
         with torch.no_grad():
-            text_tokens = clip.tokenize([text_query]).to(self.device)
-            text_features = self.model.encode_text(text_tokens)
+            text_features = self.model.forward([text_query], self.tokenizer)
         return text_features.float().cpu().numpy()
 
     def search(self, text_query: str, top_k: int = 5):
