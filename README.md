@@ -41,10 +41,6 @@ pip install -r requirements.txt
 
 ### 5. Run the System
 
-Execute the main script. The first run will ingest all data into Milvus and Elasticsearch and then perform a sample search.
-
 ```bash
-python hybrid_retrieval.py
+streamlit run app.py
 ```
-
-You can change the sample query at the bottom of `hybrid_retrieval.py` to test different searches.
