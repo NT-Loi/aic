@@ -54,7 +54,12 @@ class HybridVideoRetrievalSystem:
         vector_query_text = query
 
         if not vector_query_text:
-            vector_query_text = ' '.join(filter(None, [object_list, text, metadata]))
+            object_query = ""
+            if object_list:
+                # Extract just the labels from the list of tuples
+                temp = [str(label) + str(count) for label, count in object_list]
+                object_query = " ".join(temp)
+            vector_query_text = ' '.join(filter(None, [object_query, text, metadata]))
 
         if not vector_query_text:
             logger.warning("Search initiated with no query data.")

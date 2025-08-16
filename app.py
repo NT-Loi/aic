@@ -32,7 +32,7 @@ def parse_structured_query(query_text: str) -> dict:
                         if ':' in pair:
                             obj, count = pair.split(':')
                             try:
-                                object_list.append(([obj.strip()],int(count.strip())))
+                                object_list.append((obj.strip(),int(count.strip())))
                             except ValueError:
                                 continue
                     value = object_list

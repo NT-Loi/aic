@@ -25,26 +25,50 @@ def search_keyframes(es_client: Elasticsearch, text_query: str, objects: list, l
     
     must_clauses = []
     if objects:
+        # 'objects' is a list of (label, count) tuples, e.g., [('Person', 2), ('Car', 1)]
         for obj_label, obj_count in objects:
             must_clauses.append({
                 "nested": {
                     "path": "detected_objects",
-                        "query": {
-                            "bool": {
-                                "must": [
-                                    {"match": {"detected_objects.label": obj_label}},
-                                    # Có thể thêm điều kiện về số lượng ở đây
-                                    {"range": {"detected_objects.count": {"gte": obj_count}}}
-                                ]
-                            }
+                    "query": {
+                        # Use a bool query to combine conditions on the same nested object
+                        "bool": {
+                            "must": [
+                                {
+                                    "match": {
+                                        "detected_objects.label": obj_label
+                                    }
+                                },
+                                {
+                                    # Use a range query to check for a minimum count
+                                    "range": {
+                                        "detected_objects.count": {
+                                            "gte": obj_count
+                                        }
+                                    }
+                                }
+                            ]
                         }
+                    }
                 }
             })
+            
+    should_clauses = []
+    # Only add the OCR text clause if the user provided text, and boost its importance.
+    if text_query:
+        should_clauses.append({
+            "match": {
+                "ocr_text": {
+                    "query": text_query,
+                    "boost": 2.0  # Adjust this value to control the weight
+                }
+            }
+        })
             
     query = {
         "bool": {
             "must": must_clauses,
-            "should": [{"match": {"ocr_text": text_query}}]
+            "should": should_clauses
         }
     }
 
