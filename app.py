@@ -43,7 +43,7 @@ def search_api():
     logger.info(f"Received search request: {query_data}")
 
     try:
-        results = search_system.search(query_data=query_data, top_k=20)
+        results = search_system.search(query_data=query_data, top_k=100)
         return jsonify(results)
     except Exception as e:
         logger.error(f"An error occurred during search: {e}", exc_info=True)

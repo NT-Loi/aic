@@ -75,7 +75,7 @@ class HybridVideoRetrievalSystem:
         vector_scores = milvus_retriever.search_keyframes(self.keyframes_collection, query_vector)
         
         logger.info("3/4: Searching frame/metadata indices...")
-        meta_scores = es_retriever.search_metadata(self.es, metadata or query)
+        meta_scores = es_retriever.search_metadata(self.es, metadata)
         content_scores = es_retriever.search_keyframes(self.es, text, object_list)
 
         logger.info("4/4: Fusing results...")
