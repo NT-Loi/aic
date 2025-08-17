@@ -8,18 +8,22 @@ from utils.ranking import fuse_results_rrf
 from retrievers import milvus_retriever, es_retriever
 
 # --- Setup Logging ---
-log_file = "retrieval.log"
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] - %(message)s",
-    handlers=[
-        logging.FileHandler(log_file),
-    ]
-)
+# log_file = "system.log"
+# logging.basicConfig(
+#     level=logging.INFO,
+#     format="%(asctime)s [%(levelname)s] - %(message)s",
+#     handlers=[
+#         logging.FileHandler(log_file),
+#     ]
+# )
 logger = logging.getLogger(__name__)
 
 class HybridVideoRetrievalSystem:
-    def __init__(self):
+    def __init__(self, re_ingest=False):
+        if re_ingest:
+            from ingest_data import main
+            main()
+
         logger.info("Initializing Hybrid Video Retrieval System...")
 
         # Initialize connections
@@ -37,7 +41,6 @@ class HybridVideoRetrievalSystem:
         
         # Initialize the text encoder
         self.encoder = TextEncoder()
-        logger.info("System initialized and ready.")
 
     def search(self, query_data: dict, top_k: int = 20):
         """
@@ -96,8 +99,8 @@ class HybridVideoRetrievalSystem:
                 "video_id": video_id,
                 "keyframe_index": keyframe_index,
                 "rrf_score": rrf_score,
-                "milvus_dist": vector_scores.get((video_id, keyframe_index)),
-                "es_frame_score": content_scores.get((video_id, keyframe_index)),
+                "vector_score": vector_scores.get((video_id, keyframe_index)),
+                "content_score": content_scores.get((video_id, keyframe_index)),
                 "metadata_score": meta_scores.get(video_id)
             })
             

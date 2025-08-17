@@ -8,14 +8,6 @@ from pymilvus import connections, utility, FieldSchema, CollectionSchema, DataTy
 from collections import Counter
 import config
 
-log_file = "retrieval.log"
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] - %(message)s",
-    handlers=[
-        logging.FileHandler(log_file),
-    ]
-)
 logger = logging.getLogger(__name__)
 
 def setup_milvus_collection(collection_name, schema, index_field, index_params):
@@ -182,6 +174,3 @@ def main():
     setup_es_index(es, config.ES_FRAMES_INDEX_NAME, mappings=frames_mappings, actions_generator=generate_frames_actions)
 
     logger.info("--- DATA INGESTION COMPLETE ---")
-
-if __name__ == "__main__":
-    main()

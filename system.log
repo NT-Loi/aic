@@ -1,0 +1,106 @@
+2025-08-17 08:33:07,309 [INFO] - Initializing Hybrid Video Retrieval System...
+2025-08-17 08:33:07,318 [INFO] - Successfully connected to Milvus.
+2025-08-17 08:33:07,324 [INFO] - HEAD http://localhost:9200/ [status:200 duration:0.005s]
+2025-08-17 08:33:07,324 [INFO] - Successfully connected to Elasticsearch.
+2025-08-17 08:33:07,328 [INFO] - Loading multilingual model 'M-CLIP/XLM-Roberta-Large-Vit-B-32' to device 'cpu'...
+2025-08-17 08:33:11,532 [INFO] - TextEncoder initialized successfully.
+2025-08-17 08:33:11,532 [INFO] - ✅ Search system loaded successfully!
+2025-08-17 08:33:11,540 [INFO] - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.1.14:5000
+2025-08-17 08:33:11,540 [INFO] - [33mPress CTRL+C to quit[0m
+2025-08-17 08:33:11,545 [INFO] -  * Restarting with watchdog (inotify)
+2025-08-17 08:33:13,960 [INFO] - Initializing Hybrid Video Retrieval System...
+2025-08-17 08:33:13,966 [INFO] - Successfully connected to Milvus.
+2025-08-17 08:33:13,970 [INFO] - HEAD http://localhost:9200/ [status:200 duration:0.004s]
+2025-08-17 08:33:13,971 [INFO] - Successfully connected to Elasticsearch.
+2025-08-17 08:33:13,975 [INFO] - Loading multilingual model 'M-CLIP/XLM-Roberta-Large-Vit-B-32' to device 'cpu'...
+2025-08-17 08:33:18,156 [INFO] - TextEncoder initialized successfully.
+2025-08-17 08:33:18,157 [INFO] - ✅ Search system loaded successfully!
+2025-08-17 08:33:18,160 [WARNING] -  * Debugger is active!
+2025-08-17 08:33:18,164 [INFO] -  * Debugger PIN: 132-732-856
+2025-08-17 08:33:20,461 [INFO] - 127.0.0.1 - - [17/Aug/2025 08:33:20] "GET / HTTP/1.1" 200 -
+2025-08-17 08:33:20,479 [INFO] - 127.0.0.1 - - [17/Aug/2025 08:33:20] "GET /static/style.css HTTP/1.1" 200 -
+2025-08-17 08:33:20,479 [INFO] - 127.0.0.1 - - [17/Aug/2025 08:33:20] "[36mGET /static/script.js HTTP/1.1[0m" 304 -
+2025-08-17 08:33:25,902 [INFO] - Received search request: {'query': 'một người đàn ông', 'text': '', 'metadata': '', 'objects': [['Person', 1]]}
+2025-08-17 08:33:25,902 [INFO] - --- Starting search with data: {'query': 'một người đàn ông', 'text': '', 'metadata': '', 'objects': [['Person', 1]]} ---
+2025-08-17 08:33:25,902 [INFO] - 1/4: Encoding query...
+2025-08-17 08:33:25,989 [INFO] - 2/4: Searching vector database...
+2025-08-17 08:33:25,989 [INFO] - Searching Milvus keyframe collection...
+2025-08-17 08:33:25,996 [INFO] - Found 500 potential keyframes from Milvus.
+2025-08-17 08:33:25,996 [INFO] - 3/4: Searching frame/metadata indices...
+2025-08-17 08:33:26,024 [INFO] - POST http://localhost:9200/video_metadata/_search?request_cache=true [status:200 duration:0.028s]
+2025-08-17 08:33:26,030 [INFO] - Searching ES frames with text='' and objects=[['Person', 1]]
+2025-08-17 08:33:26,046 [INFO] - POST http://localhost:9200/video_frames/_search?request_cache=true [status:200 duration:0.015s]
+2025-08-17 08:33:26,047 [INFO] - Found 1000 frames from ES frames search.
+2025-08-17 08:33:26,048 [INFO] - 4/4: Fusing results...
+2025-08-17 08:33:26,049 [INFO] - Search complete. Returning 20 results.
+2025-08-17 08:33:26,050 [INFO] - 127.0.0.1 - - [17/Aug/2025 08:33:26] "POST /search HTTP/1.1" 200 -
+2025-08-17 08:33:26,055 [INFO] - 127.0.0.1 - - [17/Aug/2025 08:33:26] "[36mGET /frames/L30_V070/20 HTTP/1.1[0m" 304 -
+2025-08-17 08:33:26,056 [INFO] - 127.0.0.1 - - [17/Aug/2025 08:33:26] "[36mGET /frames/L30_V081/33 HTTP/1.1[0m" 304 -
+2025-08-17 08:33:26,056 [INFO] - 127.0.0.1 - - [17/Aug/2025 08:33:26] "[36mGET /frames/L30_V069/63 HTTP/1.1[0m" 304 -
+2025-08-17 08:33:26,057 [INFO] - 127.0.0.1 - - [17/Aug/2025 08:33:26] "[36mGET /frames/L30_V069/20 HTTP/1.1[0m" 304 -
+2025-08-17 08:33:26,057 [INFO] - 127.0.0.1 - - [17/Aug/2025 08:33:26] "[36mGET /frames/L30_V076/46 HTTP/1.1[0m" 304 -
+2025-08-17 08:33:26,060 [INFO] - 127.0.0.1 - - [17/Aug/2025 08:33:26] "[33mGET /frames/L28_V005/177 HTTP/1.1[0m" 404 -
+2025-08-17 08:33:26,061 [INFO] - 127.0.0.1 - - [17/Aug/2025 08:33:26] "[36mGET /frames/L30_V069/16 HTTP/1.1[0m" 304 -
+2025-08-17 08:33:26,062 [INFO] - 127.0.0.1 - - [17/Aug/2025 08:33:26] "[33mGET /frames/L29_V021/200 HTTP/1.1[0m" 404 -
+2025-08-17 08:33:26,062 [INFO] - 127.0.0.1 - - [17/Aug/2025 08:33:26] "[33mGET /frames/L28_V005/171 HTTP/1.1[0m" 404 -
+2025-08-17 08:33:26,062 [INFO] - 127.0.0.1 - - [17/Aug/2025 08:33:26] "[36mGET /frames/L30_V017/90 HTTP/1.1[0m" 304 -
+2025-08-17 08:33:26,063 [INFO] - 127.0.0.1 - - [17/Aug/2025 08:33:26] "[33mGET /frames/L26_V433/175 HTTP/1.1[0m" 404 -
+2025-08-17 08:33:26,064 [INFO] - 127.0.0.1 - - [17/Aug/2025 08:33:26] "[33mGET /frames/L26_V433/84 HTTP/1.1[0m" 404 -
+2025-08-17 08:33:26,065 [INFO] - 127.0.0.1 - - [17/Aug/2025 08:33:26] "[33mGET /frames/L28_V002/213 HTTP/1.1[0m" 404 -
+2025-08-17 08:33:26,067 [INFO] - 127.0.0.1 - - [17/Aug/2025 08:33:26] "[33mGET /frames/L26_V433/176 HTTP/1.1[0m" 404 -
+2025-08-17 08:33:26,071 [INFO] - 127.0.0.1 - - [17/Aug/2025 08:33:26] "[33mGET /frames/L28_V005/168 HTTP/1.1[0m" 404 -
+2025-08-17 08:33:26,072 [INFO] - 127.0.0.1 - - [17/Aug/2025 08:33:26] "[33mGET /frames/L26_V433/42 HTTP/1.1[0m" 404 -
+2025-08-17 08:33:26,072 [INFO] - 127.0.0.1 - - [17/Aug/2025 08:33:26] "GET /frames/L21_V011/150 HTTP/1.1" 200 -
+2025-08-17 08:33:26,073 [INFO] - 127.0.0.1 - - [17/Aug/2025 08:33:26] "[33mGET /frames/L26_V480/34 HTTP/1.1[0m" 404 -
+2025-08-17 08:33:26,076 [INFO] - 127.0.0.1 - - [17/Aug/2025 08:33:26] "[33mGET /static/placeholder.png HTTP/1.1[0m" 404 -
+2025-08-17 08:33:26,081 [INFO] - 127.0.0.1 - - [17/Aug/2025 08:33:26] "[36mGET /frames/L30_V076/17 HTTP/1.1[0m" 304 -
+2025-08-17 08:33:26,081 [INFO] - 127.0.0.1 - - [17/Aug/2025 08:33:26] "[36mGET /frames/L30_V081/23 HTTP/1.1[0m" 304 -
+2025-08-17 08:33:43,967 [INFO] - 127.0.0.1 - - [17/Aug/2025 08:33:43] "[33mGET /L30_V070/20 HTTP/1.1[0m" 404 -
+2025-08-17 08:33:47,691 [INFO] - 127.0.0.1 - - [17/Aug/2025 08:33:47] "[33mGET /L30_V070 HTTP/1.1[0m" 404 -
+2025-08-17 08:34:48,090 [INFO] - 127.0.0.1 - - [17/Aug/2025 08:34:48] "GET /videos/L30_V070 HTTP/1.1" 200 -
+2025-08-17 08:43:58,352 [INFO] - 127.0.0.1 - - [17/Aug/2025 08:43:58] "GET / HTTP/1.1" 200 -
+2025-08-17 08:43:58,364 [INFO] - 127.0.0.1 - - [17/Aug/2025 08:43:58] "[36mGET /static/style.css HTTP/1.1[0m" 304 -
+2025-08-17 08:43:58,365 [INFO] - 127.0.0.1 - - [17/Aug/2025 08:43:58] "GET /static/script.js HTTP/1.1" 200 -
+2025-08-17 08:44:00,608 [INFO] - Received search request: {'query': 'một người đàn ông', 'text': '', 'metadata': '', 'objects': []}
+2025-08-17 08:44:00,608 [INFO] - --- Starting search with data: {'query': 'một người đàn ông', 'text': '', 'metadata': '', 'objects': []} ---
+2025-08-17 08:44:00,608 [INFO] - 1/4: Encoding query...
+2025-08-17 08:44:00,679 [INFO] - 2/4: Searching vector database...
+2025-08-17 08:44:00,679 [INFO] - Searching Milvus keyframe collection...
+2025-08-17 08:44:00,687 [INFO] - Found 500 potential keyframes from Milvus.
+2025-08-17 08:44:00,687 [INFO] - 3/4: Searching frame/metadata indices...
+2025-08-17 08:44:00,700 [INFO] - POST http://localhost:9200/video_metadata/_search?request_cache=true [status:200 duration:0.013s]
+2025-08-17 08:44:00,707 [INFO] - Searching ES frames with text='' and objects=[]
+2025-08-17 08:44:00,722 [INFO] - POST http://localhost:9200/video_frames/_search?request_cache=true [status:200 duration:0.016s]
+2025-08-17 08:44:00,725 [INFO] - Found 1000 frames from ES frames search.
+2025-08-17 08:44:00,726 [INFO] - 4/4: Fusing results...
+2025-08-17 08:44:00,728 [INFO] - Search complete. Returning 20 results.
+2025-08-17 08:44:00,729 [INFO] - 127.0.0.1 - - [17/Aug/2025 08:44:00] "POST /search HTTP/1.1" 200 -
+2025-08-17 08:44:00,732 [INFO] - 127.0.0.1 - - [17/Aug/2025 08:44:00] "[36mGET /frames/L30_V081/33 HTTP/1.1[0m" 304 -
+2025-08-17 08:44:00,733 [INFO] - 127.0.0.1 - - [17/Aug/2025 08:44:00] "[36mGET /frames/L30_V076/46 HTTP/1.1[0m" 304 -
+2025-08-17 08:44:00,734 [INFO] - 127.0.0.1 - - [17/Aug/2025 08:44:00] "[36mGET /frames/L30_V069/20 HTTP/1.1[0m" 304 -
+2025-08-17 08:44:00,735 [INFO] - 127.0.0.1 - - [17/Aug/2025 08:44:00] "[36mGET /frames/L30_V076/17 HTTP/1.1[0m" 304 -
+2025-08-17 08:44:00,736 [INFO] - 127.0.0.1 - - [17/Aug/2025 08:44:00] "[36mGET /frames/L30_V081/23 HTTP/1.1[0m" 304 -
+2025-08-17 08:44:00,736 [INFO] - 127.0.0.1 - - [17/Aug/2025 08:44:00] "[36mGET /frames/L30_V069/63 HTTP/1.1[0m" 304 -
+2025-08-17 08:44:00,737 [INFO] - 127.0.0.1 - - [17/Aug/2025 08:44:00] "[36mGET /frames/L30_V070/20 HTTP/1.1[0m" 304 -
+2025-08-17 08:44:00,738 [INFO] - 127.0.0.1 - - [17/Aug/2025 08:44:00] "GET /frames/L30_V081/37 HTTP/1.1" 200 -
+2025-08-17 08:44:00,739 [INFO] - 127.0.0.1 - - [17/Aug/2025 08:44:00] "GET /frames/L30_V001/16 HTTP/1.1" 200 -
+2025-08-17 08:44:00,740 [INFO] - 127.0.0.1 - - [17/Aug/2025 08:44:00] "[36mGET /frames/L30_V069/16 HTTP/1.1[0m" 304 -
+2025-08-17 08:44:00,741 [INFO] - 127.0.0.1 - - [17/Aug/2025 08:44:00] "GET /frames/L30_V076/20 HTTP/1.1" 200 -
+2025-08-17 08:44:00,743 [INFO] - 127.0.0.1 - - [17/Aug/2025 08:44:00] "GET /frames/L30_V046/52 HTTP/1.1" 200 -
+2025-08-17 08:44:00,744 [INFO] - 127.0.0.1 - - [17/Aug/2025 08:44:00] "[33mGET /frames/L29_V021/200 HTTP/1.1[0m" 404 -
+2025-08-17 08:44:00,745 [INFO] - 127.0.0.1 - - [17/Aug/2025 08:44:00] "GET /frames/L30_V083/51 HTTP/1.1" 200 -
+2025-08-17 08:44:00,746 [INFO] - 127.0.0.1 - - [17/Aug/2025 08:44:00] "[33mGET /frames/L28_V005/171 HTTP/1.1[0m" 404 -
+2025-08-17 08:44:00,749 [INFO] - 127.0.0.1 - - [17/Aug/2025 08:44:00] "[33mGET /frames/L28_V005/177 HTTP/1.1[0m" 404 -
+2025-08-17 08:44:00,752 [INFO] - 127.0.0.1 - - [17/Aug/2025 08:44:00] "GET /frames/L30_V028/40 HTTP/1.1" 200 -
+2025-08-17 08:44:00,754 [INFO] - 127.0.0.1 - - [17/Aug/2025 08:44:00] "[33mGET /frames/L29_V002/116 HTTP/1.1[0m" 404 -
+2025-08-17 08:44:00,754 [INFO] - 127.0.0.1 - - [17/Aug/2025 08:44:00] "GET /frames/L30_V046/38 HTTP/1.1" 200 -
+2025-08-17 08:44:00,756 [INFO] - 127.0.0.1 - - [17/Aug/2025 08:44:00] "[33mGET /static/placeholder.png HTTP/1.1[0m" 404 -
+2025-08-17 08:44:00,757 [INFO] - 127.0.0.1 - - [17/Aug/2025 08:44:00] "[33mGET /frames/L29_V002/228 HTTP/1.1[0m" 404 -
+2025-08-17 08:44:00,760 [INFO] - 127.0.0.1 - - [17/Aug/2025 08:44:00] "[33mGET /static/placeholder.png HTTP/1.1[0m" 404 -
+2025-08-17 08:44:02,071 [INFO] - 127.0.0.1 - - [17/Aug/2025 08:44:02] "[35m[1mGET /videos/L30_V081 HTTP/1.1[0m" 206 -
+2025-08-17 08:44:02,078 [INFO] - 127.0.0.1 - - [17/Aug/2025 08:44:02] "[35m[1mGET /videos/L30_V081 HTTP/1.1[0m" 206 -
+2025-08-17 08:44:02,083 [INFO] - 127.0.0.1 - - [17/Aug/2025 08:44:02] "[35m[1mGET /videos/L30_V081 HTTP/1.1[0m" 206 -
+2025-08-17 08:44:02,091 [INFO] - 127.0.0.1 - - [17/Aug/2025 08:44:02] "[35m[1mGET /videos/L30_V081 HTTP/1.1[0m" 206 -
