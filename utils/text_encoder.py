@@ -7,8 +7,8 @@ import config
 logger = logging.getLogger(__name__)
 
 class TextEncoder:
-    def __init__(self):
-        self.device = "cuda" if torch.cuda.is_available() else "cpu"
+    def __init__(self, device: str = 'cuda'):
+        self.device = device
         logger.info(f"Loading multilingual model '{config.MODEL_NAME}' to device '{self.device}'...")
         self.model = pt_multilingual_clip.MultilingualCLIP.from_pretrained(config.MODEL_NAME)
         self.tokenizer = transformers.AutoTokenizer.from_pretrained(config.MODEL_NAME)

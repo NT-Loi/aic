@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AIC2025</title>
+    <title>Hybrid Video Search</title>
+    <!-- Links to the CSS file located in the /static folder -->
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
@@ -13,11 +14,13 @@
     </header>
 
     <main>
+        <!-- Main Search Form Container -->
         <div class="search-container">
             <form id="search-form">
-                <!-- Main semantic query -->
-                <input type="text" id="main-query" name="query" placeholder="Enter a general description...">
+                <!-- Main semantic query input -->
+                <input type="text" id="main-query" name="query" placeholder="Enter a general description (e.g., 'a person walking a dog')...">
                 
+                <!-- Buttons to control UI -->
                 <button type="button" id="toggle-filters-btn">▼ Advanced Filters</button>
                 <button type="submit" id="search-btn">Search</button>
 
@@ -36,19 +39,21 @@
                     <div class="filter-group">
                         <label>Must Contain Objects:</label>
                         <div id="object-list">
-                            <!-- JS will add objects here -->
+                            <!-- JavaScript will add selected objects here -->
                         </div>
                         <div class="add-object-controls">
                             <select id="object-select">
-                                <!-- Pre-populate with common object labels -->
+                                <!-- Pre-populate with common object labels you expect from your RCNN model -->
                                 <option value="Person">Person</option>
                                 <option value="Car">Car</option>
                                 <option value="Dog">Dog</option>
                                 <option value="Cat">Cat</option>
                                 <option value="Tree">Tree</option>
                                 <option value="Chair">Chair</option>
+                                <option value="Table">Table</option>
+                                <option value="Screen">Screen</option>
                             </select>
-                            <input type="number" id="object-count" value="1" min="1">
+                            <input type="number" id="object-count" value="1" min="1" title="Minimum count of this object">
                             <button type="button" id="add-object-btn">Add</button>
                         </div>
                     </div>
@@ -56,23 +61,40 @@
             </form>
         </div>
 
+        <!-- Controls for the Results Area (like sorting) -->
+        <div class="results-controls">
+            <div class="sort-control">
+                <label for="sort-by-select">Sort by:</label>
+                <select id="sort-by-select">
+                    <option value="rerank_score" selected>Re-Ranker</option>
+                    <option value="rrf_score">RRF</option>
+                    <option value="vector_score">Semantic Similarity (Vector)</option>
+                    <option value="content_score">Content Match (OCR/Object)</option>
+                    <option value="metadata_score">Metadata Match</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Container where search results will be displayed -->
         <div id="results-container">
-            <!-- JS will populate search results here -->
             <p class="placeholder">Search results will appear here.</p>
         </div>
     </main>
 
+    <!-- =================================================== -->
+    <!--           VIDEO PLAYER MODAL (HIDDEN BY DEFAULT)    -->
+    <!-- =================================================== -->
     <div id="video-modal" class="modal-overlay hidden">
         <div class="modal-content">
-            <button id="close-modal-btn" class="close-btn">&times;</button>
+            <button id="close-modal-btn" class="close-btn" title="Close video player">&times;</button>
             <h3 id="modal-video-title">Loading video...</h3>
             <video id="modal-video-player" width="100%" controls autoplay>
-                <!-- Trình duyệt sẽ hiển thị thông báo này nếu không hỗ trợ thẻ video -->
+                <!-- This message is shown if the browser doesn't support the <video> tag -->
                 Your browser does not support the video tag.
             </video>
         </div>
     </div>
 
-    <script src="{{ url_for('static', filename='script.js') }}"></script>
+   <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>
