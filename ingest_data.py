@@ -37,13 +37,25 @@ def ingest_keyframe_data(collection: Collection):
 def setup_es_index(es_client, index_name, mappings=None, actions_generator=None):
     if es_client.indices.exists(index=index_name):
         logger.warning(f"Index '{index_name}' already exists. Dropping.")
-        es_client.indices.delete(index=index_name)
-    
-    if mappings:
-        es_client.indices.create(index=index_name, body={"mappings": mappings})
-    else:
-        es_client.indices.create(index=index_name)
-    logger.info(f"Index '{index_name}' created.")
+        try:
+            es_client.indices.delete(index=index_name)
+        except Exception as e:
+            logger.error(f"Failed to delete existing index '{index_name}': {e}")
+            return 
+
+    logger.info(f"Attempting to create index '{index_name}'...")
+    try:
+        create_body = {"mappings": mappings} if mappings else None
+        es_client.indices.create(
+            index=index_name, 
+            body=create_body,
+            ignore=[400] # Ignore 'Bad Request' errors
+        )
+        logger.info(f"Index '{index_name}' created or already existed.")
+    except Exception as e:
+        # This will now only catch other, unexpected errors
+        logger.error(f"An unexpected error occurred during index creation: {e}")
+        raise e
 
     if actions_generator:
         logger.info(f"Ingesting data into '{index_name}'...")
@@ -139,7 +151,13 @@ def generate_frames_actions():
 def main():
     # Connect to services
     connections.connect("default", host=config.MILVUS_HOST, port=config.MILVUS_PORT)
-    es = Elasticsearch(f"http://{config.ES_HOST}:{config.ES_PORT}")
+    es = Elasticsearch(f"http://{config.ES_HOST}:{config.ES_PORT}",
+                        timeout=60,
+                        max_retries=3, 
+                        retry_on_timeout=True)
+    
+    if not es.ping():
+        raise ConnectionError("Initial ping to Elasticsearch failed.")
 
     # --- Milvus Ingestion ---
     kf_fields = [

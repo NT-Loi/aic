@@ -11,6 +11,33 @@
 3.  **Result Fusion**:
     -   The ranked lists of videos from Elasticsearch and Milvus are combined using RRF. This produces a final, unified ranking that leverages both keyword relevance and semantic context.
 
+## File Tree
+
+```
+├── 📁 retrievers/
+│   ├── 🐍 __init__.py
+│   ├── 🐍 es_retriever.py
+│   └── 🐍 milvus_retriever.py
+├── 📁 static/
+│   ├── 📄 script.js
+│   └── 🎨 style.css
+├── 📁 templates/
+│   └── 🌐 index.html
+├── 📁 utils/
+│   ├── 🐍 __init__.py
+│   ├── 🐍 ranker.py
+│   └── 🐍 text_encoder.py
+├── 📖 README.md
+├── 🐍 app.py
+├── 🐍 config.py
+├── ⚙️ docker-compose.yml
+├── 🐍 ingest_data.py
+├── 🐍 ocr.py
+├── 📄 requirements.txt
+├── 🐍 retrieval_system.py
+└── 📋 system.log
+```
+
 ## Setup and Usage
 
 ### 1. Prerequisites

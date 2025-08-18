@@ -45,7 +45,7 @@ class HybridVideoRetrievalSystem:
         # Initialize the text encoder and reranker
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self.encoder = TextEncoder(device=self.device)
-        self.reranker = CrossModalReRanker(device=self.device)
+        # self.reranker = CrossModalReRanker(device=self.device)
 
     def _load_keyframe_image(self, video_id: str, keyframe_index: int):
         """
@@ -53,7 +53,7 @@ class HybridVideoRetrievalSystem:
         This function is hardened to only return a valid Image object or None.
         """
         try:
-            filename = f"{keyframe_index:04d}.jpg"
+            filename = f"{keyframe_index:03d}.jpg"
             image_path = os.path.join(config.KEYFRAMES_DIR, video_id, filename)
             
             # Check if file exists before trying to open it
@@ -118,23 +118,25 @@ class HybridVideoRetrievalSystem:
         candidate_frames_set = set(vector_scores.keys()) | set(content_scores.keys())
         meta_propagated = {frame: meta_scores.get(frame[0], 0) for frame in candidate_frames_set}
         ranked_meta_scores = sorted(meta_propagated.items(), key=lambda item: item[1], reverse=True)
-        ranked_fused_scores = rrf_ranker([ranked_vector_scores, ranked_content_scores, ranked_meta_scores])
         
-        NUM_CANDIDATES_TO_RERANK = top_k * 5
-        candidates_for_reranking = [key for key, score in ranked_fused_scores[:NUM_CANDIDATES_TO_RERANK]]
+        fused_scores = rrf_ranker([ranked_vector_scores, ranked_content_scores, ranked_meta_scores])
+        ranked_fused_scores = sorted(fused_scores.items(), key=lambda item: item[1], reverse=True)
         
-        logger.info(f"3/3: Re-ranking top {len(candidates_for_reranking)} candidates...")
-        reranked_results = self.reranker.rerank(
-            text_query=query,
-            candidate_frames=candidates_for_reranking,
-            image_loader_func=self._load_keyframe_image 
-        )
+        # NUM_CANDIDATES_TO_RERANK = top_k * 5
+        # candidates_for_reranking = [key for key, score in ranked_fused_scores[:NUM_CANDIDATES_TO_RERANK]]
+        
+        # logger.info(f"3/3: Re-ranking top {len(candidates_for_reranking)} candidates...")
+        # reranked_scores = self.reranker.rerank(
+        #     text_query=query,
+        #     candidate_frames=candidates_for_reranking,
+        #     image_loader_func=self._load_keyframe_image 
+        # )
 
-        fused_scores = {key: score for key, score in ranked_fused_scores}
+        # ranked_reranked_scores = sorted(reranked_scores.items(), key=lambda item: item[1], reverse=True)
 
         results = []
         # reranked_results is a sorted list of [((vid, idx), rerank_score), ...]
-        for (video_id, keyframe_index), rerank_score in reranked_results[:top_k]:
+        for (video_id, keyframe_index), rerank_score in ranked_fused_scores[:top_k]:
             key = (video_id, keyframe_index)
             results.append({
                 "video_id": video_id,
@@ -143,7 +145,7 @@ class HybridVideoRetrievalSystem:
                 "content_score": content_scores.get(key),
                 "metadata_score": meta_scores.get(video_id),
                 "rrf_score": fused_scores.get(key),
-                "rerank_score": rerank_score
+                "rerank_score": 0
             })
             
         logger.info(f"Search complete. {results}")
