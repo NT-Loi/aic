@@ -122,21 +122,21 @@ class HybridVideoRetrievalSystem:
         fused_scores = rrf_ranker([ranked_vector_scores, ranked_content_scores, ranked_meta_scores])
         ranked_fused_scores = sorted(fused_scores.items(), key=lambda item: item[1], reverse=True)
         
-        # NUM_CANDIDATES_TO_RERANK = top_k * 5
-        # candidates_for_reranking = [key for key, score in ranked_fused_scores[:NUM_CANDIDATES_TO_RERANK]]
+        NUM_CANDIDATES_TO_RERANK = top_k * 5
+        candidates_for_reranking = [key for key, score in ranked_fused_scores[:NUM_CANDIDATES_TO_RERANK]]
         
-        # logger.info(f"3/3: Re-ranking top {len(candidates_for_reranking)} candidates...")
-        # reranked_scores = self.reranker.rerank(
-        #     text_query=query,
-        #     candidate_frames=candidates_for_reranking,
-        #     image_loader_func=self._load_keyframe_image 
-        # )
+        logger.info(f"3/3: Re-ranking top {len(candidates_for_reranking)} candidates...")
+        reranked_scores = self.reranker.rerank(
+            text_query=query,
+            candidate_frames=candidates_for_reranking,
+            image_loader_func=self._load_keyframe_image 
+        )
 
-        # ranked_reranked_scores = sorted(reranked_scores.items(), key=lambda item: item[1], reverse=True)
+        ranked_reranked_scores = sorted(reranked_scores.items(), key=lambda item: item[1], reverse=True)
 
         results = []
         # reranked_results is a sorted list of [((vid, idx), rerank_score), ...]
-        for (video_id, keyframe_index), rerank_score in ranked_fused_scores[:top_k]:
+        for (video_id, keyframe_index), rerank_score in ranked_reranked_scores[:top_k]:
             key = (video_id, keyframe_index)
             results.append({
                 "video_id": video_id,
@@ -145,7 +145,7 @@ class HybridVideoRetrievalSystem:
                 "content_score": content_scores.get(key),
                 "metadata_score": meta_scores.get(video_id),
                 "rrf_score": fused_scores.get(key),
-                "rerank_score": 0
+                "rerank_score": rerank_score
             })
             
         logger.info(f"Search complete. {results}")

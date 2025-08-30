@@ -2,6 +2,7 @@ from collections import defaultdict
 import config
 import logging
 from sentence_transformers import CrossEncoder
+from sentence_transformers import util
 
 logger = logging.getLogger(__name__)
 
@@ -28,38 +29,54 @@ class CrossModalReRanker:
             logger.error(f"💥 Failed to load Cross-Encoder model: {e}")
             self.model = None
 
-    def rerank(self, text_query: str, candidate_frames: list, image_loader_func) -> list:
+    def rerank(self, text_query: str, candidate_frames: list, image_loader_func) -> dict:
         """
-        Re-ranks a list of candidate frames against a text query.
+        Re-ranks a list of candidate frames against a text query using CLIP bi-encoder.
+        
+        Args:
+            text_query (str): The search query.
+            candidate_frames (list): List of (video_id, keyframe_index) tuples.
+            image_loader_func (func): Function that returns a PIL.Image for a (video_id, keyframe_index).
+
+        Returns:
+            dict: Mapping of (video_id, keyframe_index) -> score
         """
         if not self.model or not candidate_frames:
-            return []
+            return {}
 
-        logger.info(f"Re-ranking {len(candidate_frames)} candidates with the Cross-Encoder...")
+        logger.info(f"Re-ranking {len(candidate_frames)} candidates with CLIP bi-encoder...")
 
-        model_input_pairs = []
-        loaded_frames_keys = [] # Track successfully loaded frames
+        # Clean the text query
         clean_query = str(text_query).strip()
+
+        # Load all images
+        loaded_frames_keys = []
+        loaded_images = []
+
         for video_id, keyframe_index in candidate_frames:
             try:
                 image = image_loader_func(video_id, keyframe_index)
                 if image:
-                    model_input_pairs.append((clean_query, image))
                     loaded_frames_keys.append((video_id, keyframe_index))
+                    loaded_images.append(image)
             except Exception as e:
                 logger.warning(f"Could not load image for {video_id}/{keyframe_index}: {e}")
-        
-        if not model_input_pairs:
-            logger.warning("No images could be loaded for re-ranking.")
-            return []
-        # logger.info(f"{model_input_pairs}")
-        scores = self.model.predict(model_input_pairs, show_progress_bar=True) # Turn on progress bar for long tasks
 
-        # The score at scores[i] corresponds to the key at loaded_frames_keys[i]
+        if not loaded_images:
+            logger.warning("No images could be loaded for re-ranking.")
+            return {}
+
+        # Encode query and images
+        query_emb = self.model.encode(clean_query, convert_to_tensor=True, show_progress_bar=False)
+        image_embs = self.model.encode(loaded_images, convert_to_tensor=True, show_progress_bar=True)
+
+        # Compute cosine similarity
+        scores = util.cos_sim(query_emb, image_embs)[0].cpu().tolist()
+
+        # Build the result dictionary
         reranked_scores = {key: score for key, score in zip(loaded_frames_keys, scores)}
 
-        # For frames that failed to load, we don't include them, or we could assign a low score
-        # Let's add them back with a very low score so they don't get lost
+        # Assign very low score to frames that failed to load
         for frame_key in candidate_frames:
             if frame_key not in reranked_scores:
                 reranked_scores[frame_key] = -999.0
